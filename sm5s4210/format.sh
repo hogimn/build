@@ -1,0 +1,137 @@
+#
+# Copyright (C) 2010 Samsung Electronics Co., Ltd.
+#              http://www.samsung.com/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+####################################
+#!/bin/bash
+
+dmesg | tail -10
+
+echo "Input SD Reader's device file?(ex. /dev/sdb)"
+
+read SD_Type
+
+if [ -z $SD_Type ]
+then
+    echo "usage: <SD Reader's device file>"
+    exit 0
+fi
+
+partition1="$SD_Type"1
+partition2="$SD_Type"2
+partition3="$SD_Type"3
+partition4="$SD_Type"4
+
+if [ -b $SD_Type ]
+then
+    echo "$SD_Type reader is identified."
+else
+    echo "$SD_Type is NOT identified."
+    exit 0
+fi
+
+####################################
+TFLASH=$SD_Type
+# Check TFlash Sectors
+TFLASH_SECTORS=`fdisk -l -u $SD_Type | grep sectors | head -n 1 \
+| cut -d',' -f4 | cut -d' ' -f3`
+
+# Android Partition Size 
+SIZE_ANDROID=524288		# 256MB
+SIZE_ANDROID_DATA=2097152	# 1GB
+SIZE_ANDROID_CACHE=262144	# 128MB
+SIZE_FAT=$(($TFLASH_SECTORS- 32768 - $SIZE_ANDROID - $SIZE_ANDROID_DATA - $SIZE_ANDROID_CACHE)) 
+
+OFFSET_ANDROID=$(($SIZE_ANDROID-1))
+OFFSET_ANDROID_DATA=$(($SIZE_ANDROID_DATA-1))
+OFFSET_ANDROID_CACHE=$(($SIZE_ANDROID_CACHE-1))
+OFFSET_FAT=$(($SIZE_FAT-1))
+
+echo "TFLASH_SECTORS $TFLASH_SECTORS"
+echo "FAT_SIZE $SIZE_FAT"
+
+
+####################################
+echo "T-Flash-device:$TFLASH"
+
+print_success()
+{
+    if [ "$1" == 0 ]; then
+        echo "success"
+    else
+        echo "failed"
+        exit -1
+    fi
+}
+
+partition_add()
+{
+    echo n
+    echo p
+    echo $1
+    echo $2
+    echo +$3
+}
+
+sdcard_format()
+{
+# JNJ
+    START_ANDROID=32768  # 16MB
+    START_ANDROID_DATA=$(($START_ANDROID+$SIZE_ANDROID))
+    START_ANDROID_CACHE=$(($START_ANDROID_DATA+$SIZE_ANDROID_DATA))
+    START_FAT=$(($START_ANDROID_CACHE+$SIZE_ANDROID_CACHE))
+
+# Pre Umount 
+    umount /media/*
+
+    (
+
+# Pre Partition Delete
+        echo d
+        echo 6
+        echo d
+        echo 5
+        echo d
+        echo 4
+        echo d
+        echo 3
+        echo d
+        echo 2
+        echo d
+        echo 1
+        echo d
+
+# Partition Create
+        partition_add 1 $START_FAT $OFFSET_FAT
+        partition_add 2 $START_ANDROID $OFFSET_ANDROID
+        partition_add 3 $START_ANDROID_DATA $OFFSET_ANDROID_DATA
+        partition_add 4 $START_ANDROID_CACHE $OFFSET_ANDROID_CACHE
+
+        echo w
+        echo q
+    ) | fdisk -u $TFLASH > /dev/null 2>&1
+
+# Partition Format
+    echo "FAT Partition Format"
+    mkfs.vfat -n "Storage" "$TFLASH"1 > /dev/null 2>&1
+    echo "Android Partition Format"
+    mkfs.ext4 -L "android" "$TFLASH"2 > /dev/null 2>&1
+    echo "Data Partition Format"
+    mkfs.ext4 -L "data" "$TFLASH"3 > /dev/null 2>&1
+    echo "Cache Partition Format"
+    mkfs.ext4 -L "cache" "$TFLASH"4 > /dev/null 2>&1
+}
+
+echo
+echo -n "Erase Uboot and Kernel Area : "
+
+echo
+echo -n "Partition Create : "
+sdcard_format
+print_success "$?"
+
+echo "Eject SD card and insert it again."

@@ -1,0 +1,27 @@
+key 30		A
+key 48		B
+key 21		Y
+key 45		X
+key 35		H
+key 37		K
+key 24		O
+key 50		M
+key 115		VOLUME_UP
+key 114		VOLUME_DOWN
+key 139		MENU              WAKE_DROPPED
+key 102		HOME              WAKE
+key 116		ENDCALL           WAKE
+key 158		BACK              WAKE_DROPPED
+key 105		DPAD_LEFT         WAKE_DROPPED
+key 106		DPAD_RIGHT        WAKE_DROPPED
+key 103		DPAD_UP           WAKE_DROPPED
+key 108		DPAD_DOWN         WAKE_DROPPED
+key 28		DPAD_CENTER       WAKE_DROPPED
+key 217     SEARCH            WAKE_DROPPED
+key 212     CAMERA            WAKE_DROPPED
+key 19		R	 
+key 38		L
+key 2		1
+key 3		2
+key 4		3
+key 5		4

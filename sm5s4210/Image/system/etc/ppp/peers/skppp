@@ -1,0 +1,13 @@
+exec /system/bin/chat -v \
+TIMEOUT 20 \
+ABORT 'BUSY' \
+ABORT 'NO ANSWER' \
+ABORT 'NO CARRIER' \
+SAY 'Starting HSDPA Connection\n' \
+'' 'AT' \
+'OK' 'ATQ0V1E0' \
+'OK' 'ATZ' \
+'OK' 'AT&F' \
+SAY 'Connecting...\n' \
+'OK' 'ATDT*98#' \
+CONNECT CLIENT 
