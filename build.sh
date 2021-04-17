@@ -17,9 +17,6 @@ lunch virtualbox-eng
 cd $D_X86VBOX
 make all -j8
 
-cd $D_X86VBOX
-. debug.sh
-
 cd $D_CUR
 
 sudo exportfs -a
