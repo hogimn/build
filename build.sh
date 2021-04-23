@@ -11,6 +11,10 @@ export JACK_SERVER_VM_ARGUMENTS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -X
 $D_AOSP/prebuilts/sdk/tools/jack-admin kill-server
 $D_AOSP/prebuilts/sdk/tools/jack-admin start-server
 
+cd $D_AOSP/frameworks/base
+git apply $D_CUR/frameworks_base.patch
+cd $D_AOSP
+
 . build/envsetup.sh
 lunch virtualbox-eng
 
